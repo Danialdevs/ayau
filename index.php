@@ -538,10 +538,7 @@ if ($user) {
                     <div class="card glass-card border-0 shadow-sm">
                         <div class="card-body p-4">
                             <h2 class="h3 mb-3">Вход по коду</h2>
-                            <p class="text-body-secondary mb-4">
-                                Введите выданный цифровой код. Начальный код администратора:
-                                <span class="fw-bold"><?= h(ADMIN_CODE) ?></span>
-                            </p>
+                            <p class="text-body-secondary mb-4">Введите ваш код доступа.</p>
                             <form method="post" action="<?= h(actionUrl('login')) ?>" class="vstack gap-3">
                                 <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                 <div>
