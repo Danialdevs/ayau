@@ -45,7 +45,7 @@ if ($action === 'logout') {
     session_unset();
     session_destroy();
     session_start();
-    flash('success', 'Вы вышли из системы.');
+    flash('success', t('flash_logged_out'));
     header('Location: ' . actionUrl());
     exit;
 }
@@ -56,7 +56,7 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $code = trim((string) ($_POST['code'] ?? ''));
 
     if (!isValidAccessCode($code)) {
-        flash('error', 'Введите код в формате 123-123-123.');
+        flash('error', t('flash_bad_code'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -66,13 +66,13 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $foundUser = $stmt->fetch();
 
     if (!$foundUser) {
-        flash('error', 'Код не найден.');
+        flash('error', t('flash_not_found'));
         header('Location: ' . actionUrl());
         exit;
     }
 
     $_SESSION['user_id'] = $foundUser['id'];
-    flash('success', 'Вход выполнен.');
+    flash('success', t('flash_login_ok'));
     header('Location: ' . actionUrl());
     exit;
 }
@@ -95,7 +95,7 @@ if ($action === 'create-user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!isValidAccessCode($code)) {
-        flash('error', 'Код должен быть в формате 123-123-123.');
+        flash('error', t('flash_code_format'));
         header('Location: ' . actionUrl('home', ['tab' => 'users']));
         exit;
     }
@@ -104,7 +104,7 @@ if ($action === 'create-user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute(['code' => $code]);
 
     if ($stmt->fetch()) {
-        flash('error', 'Такой код уже существует.');
+        flash('error', t('flash_code_exists'));
         header('Location: ' . actionUrl('home', ['tab' => 'users']));
         exit;
     }
@@ -119,7 +119,7 @@ if ($action === 'create-user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'created_at' => now(),
     ]);
 
-    flash('success', 'Пользователь создан. Код доступа: ' . $code . '. Лимит в месяц: ' . $uploadLimit . '.');
+    flash('success', t('flash_user_created', $code, $uploadLimit));
     header('Location: ' . actionUrl('home', ['tab' => 'users']));
     exit;
 }
@@ -135,7 +135,7 @@ if ($action === 'delete-user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $targetUser = $stmt->fetch();
 
     if (!$targetUser || $targetUser['role'] !== 'user') {
-        flash('error', 'Пользователь не найден или его нельзя удалить.');
+        flash('error', t('flash_user_404'));
         header('Location: ' . actionUrl('home', ['tab' => 'users']));
         exit;
     }
@@ -150,7 +150,7 @@ if ($action === 'delete-user' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdo->prepare('DELETE FROM users WHERE id = :id')->execute(['id' => $userId]);
 
-    flash('success', 'Пользователь и все его файлы удалены.');
+    flash('success', t('flash_user_deleted'));
     header('Location: ' . actionUrl('home', ['tab' => 'users']));
     exit;
 }
@@ -167,7 +167,7 @@ if ($action === 'update-limit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $targetUser = $stmt->fetch();
 
     if (!$targetUser || $targetUser['role'] !== 'user') {
-        flash('error', 'Пользователь для изменения лимита не найден.');
+        flash('error', t('flash_limit_404'));
         header('Location: ' . actionUrl('home', ['tab' => 'users']));
         exit;
     }
@@ -178,7 +178,7 @@ if ($action === 'update-limit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'id' => $userId,
     ]);
 
-    flash('success', 'Месячный лимит обновлен: ' . $uploadLimit . ' загрузок в месяц.');
+    flash('success', t('flash_limit_ok', $uploadLimit));
     header('Location: ' . actionUrl('home', ['tab' => 'users']));
     exit;
 }
@@ -196,13 +196,13 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $userLimit = userUploadLimit($user);
 
     if ($uploadCount >= $userLimit) {
-        flash('error', 'Достигнут месячный лимит: максимум ' . $userLimit . ' загрузок в месяц.');
+        flash('error', t('flash_limit_reached', $userLimit));
         header('Location: ' . actionUrl());
         exit;
     }
 
     if (!isset($_FILES['model'])) {
-        flash('error', 'Файл не был передан.');
+        flash('error', t('flash_no_file'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -210,13 +210,13 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $file = $_FILES['model'];
 
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        flash('error', 'Ошибка загрузки файла.');
+        flash('error', t('flash_upload_err'));
         header('Location: ' . actionUrl());
         exit;
     }
 
     if (($file['size'] ?? 0) > MAX_FILE_SIZE) {
-        flash('error', 'Файл слишком большой. Допустимо до 100 MB.');
+        flash('error', t('flash_too_big'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -225,7 +225,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
     if ($extension !== 'glb') {
-        flash('error', 'Разрешены только файлы формата .glb.');
+        flash('error', t('flash_glb_only'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -239,7 +239,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $storedPath = $userDir . '/' . $storedName;
 
     if (!move_uploaded_file($file['tmp_name'], $storedPath)) {
-        flash('error', 'Не удалось сохранить файл.');
+        flash('error', t('flash_save_err'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -265,7 +265,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
     ]);
 
-    flash('success', 'Файл загружен. Он будет храниться 30 дней.');
+    flash('success', t('flash_uploaded'));
     $redirectParams = ['preview' => $shareToken];
     if ($user['role'] === 'admin') {
         $redirectParams['tab'] = 'upload';
@@ -292,7 +292,7 @@ if ($action === 'delete-upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $upload = $stmt->fetch();
 
     if (!$upload) {
-        flash('error', 'Файл не найден.');
+        flash('error', t('flash_file_404'));
         header('Location: ' . actionUrl());
         exit;
     }
@@ -306,7 +306,7 @@ if ($action === 'delete-upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $redirectTab = trim((string) ($_POST['redirect_tab'] ?? ''));
     $redirectParams = in_array($redirectTab, ['models', 'upload', 'users'], true) ? ['tab' => $redirectTab] : [];
-    flash('success', 'Файл удален.');
+    flash('success', t('flash_file_deleted'));
     header('Location: ' . actionUrl('home', $redirectParams));
     exit;
 }
@@ -428,13 +428,17 @@ if ($user) {
         $selectedUpload = $previewList[0];
     }
 }
+
+$currentLang = lang();
+$otherLang = $currentLang === 'ru' ? 'kk' : 'ru';
+$otherLangLabel = $currentLang === 'ru' ? 'Қаз' : 'Рус';
 ?>
 <!doctype html>
-<html lang="ru">
+<html lang="<?= $currentLang === 'kk' ? 'kk' : 'ru' ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3D загрузчик Аяулым Махан</title>
+    <title><?= h(t('site_title')) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
@@ -509,17 +513,20 @@ if ($user) {
             <div class="card-body p-4 p-lg-5">
                 <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-lg-center">
                     <div>
-                        <span class="badge text-bg-light text-primary mb-3">Hand-Track</span>
-                        <h1 class="display-6 fw-bold mb-2">3D загрузчик</h1>
-                        <p class="mb-0 opacity-75">Аяулым Махан</p>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="badge text-bg-light text-primary">Hand-Track</span>
+                            <a href="?lang=<?= $otherLang ?>" class="badge text-bg-light text-dark text-decoration-none"><?= $otherLangLabel ?></a>
+                        </div>
+                        <h1 class="display-6 fw-bold mb-2"><?= h(t('app_title')) ?></h1>
+                        <p class="mb-0 opacity-75"><?= h(t('app_subtitle')) ?></p>
                     </div>
                     <?php if ($user): ?>
                         <div class="text-lg-end">
                             <div class="mb-2">
-                                <span class="badge rounded-pill text-bg-light text-dark"><?= $user['role'] === 'admin' ? 'Администратор' : 'Участник' ?></span>
+                                <span class="badge rounded-pill text-bg-light text-dark"><?= $user['role'] === 'admin' ? h(t('admin')) : h(t('member')) ?></span>
                             </div>
-                            <div class="fw-semibold mb-3">Код: <?= h($user['code']) ?></div>
-                            <a class="btn btn-outline-light" href="<?= h(actionUrl('logout')) ?>">Выйти</a>
+                            <div class="fw-semibold mb-3"><?= h(t('code_label')) ?>: <?= h($user['code']) ?></div>
+                            <a class="btn btn-outline-light" href="<?= h(actionUrl('logout')) ?>"><?= h(t('logout')) ?></a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -537,12 +544,12 @@ if ($user) {
                 <div class="col-12 col-md-8 col-lg-5">
                     <div class="card glass-card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <h2 class="h3 mb-3">Вход по коду</h2>
-                            <p class="text-body-secondary mb-4">Введите ваш код доступа.</p>
+                            <h2 class="h3 mb-3"><?= h(t('login_title')) ?></h2>
+                            <p class="text-body-secondary mb-4"><?= h(t('login_desc')) ?></p>
                             <form method="post" action="<?= h(actionUrl('login')) ?>" class="vstack gap-3">
                                 <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                 <div>
-                                    <label for="code" class="form-label">Код доступа</label>
+                                    <label for="code" class="form-label"><?= h(t('access_code')) ?></label>
                                     <input
                                         id="code"
                                         type="text"
@@ -552,12 +559,12 @@ if ($user) {
                                         maxlength="<?= ACCESS_CODE_LENGTH ?>"
                                         pattern="\d{3}-\d{3}-\d{3}"
                                         data-code-mask="true"
-                                        placeholder="Например: 123-123-123"
+                                        placeholder="<?= h(t('code_placeholder')) ?>"
                                         required
                                     >
-                                    <div class="form-text">Код должен быть в формате 123-123-123.</div>
+                                    <div class="form-text"><?= h(t('code_format_hint')) ?></div>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-lg">Войти</button>
+                                <button type="submit" class="btn btn-primary btn-lg"><?= h(t('login_btn')) ?></button>
                             </form>
                         </div>
                     </div>
@@ -579,18 +586,18 @@ if ($user) {
                                 <a class="nav-link d-flex align-items-center gap-2 <?= $tab === 'models' ? 'active' : '' ?>"
                                    href="<?= h(actionUrl('home', ['tab' => 'models'])) ?>">
                                     <i class="bi bi-box"></i>
-                                    <span>Мои 3D модели</span>
+                                    <span><?= h(t('my_3d_models')) ?></span>
                                     <span class="badge <?= $tab === 'models' ? 'text-bg-light text-primary' : 'text-bg-secondary' ?> ms-auto"><?= count($currentUploads) ?></span>
                                 </a>
                                 <a class="nav-link d-flex align-items-center gap-2 <?= $tab === 'upload' ? 'active' : '' ?>"
                                    href="<?= h(actionUrl('home', ['tab' => 'upload'])) ?>">
                                     <i class="bi bi-cloud-upload"></i>
-                                    <span>Загрузить модель</span>
+                                    <span><?= h(t('upload_model')) ?></span>
                                 </a>
                                 <a class="nav-link d-flex align-items-center gap-2 <?= $tab === 'users' ? 'active' : '' ?>"
                                    href="<?= h(actionUrl('home', ['tab' => 'users'])) ?>">
                                     <i class="bi bi-people"></i>
-                                    <span>Пользователи</span>
+                                    <span><?= h(t('users')) ?></span>
                                     <span class="badge <?= $tab === 'users' ? 'text-bg-light text-primary' : 'text-bg-secondary' ?> ms-auto"><?= $usersCount ?></span>
                                 </a>
                             </nav>
@@ -602,20 +609,20 @@ if ($user) {
                     <?php if ($tab === 'models'): ?>
                         <div class="card glass-card border-0 shadow-sm mb-4">
                             <div class="card-body p-4">
-                                <h2 class="h4 mb-3">Просмотр 3D</h2>
+                                <h2 class="h4 mb-3"><?= h(t('view_3d')) ?></h2>
                                 <?php if ($selectedUpload): ?>
                                     <model-viewer src="<?= h(fileUrl($selectedUpload)) ?>" camera-controls auto-rotate shadow-intensity="1" exposure="1"></model-viewer>
                                 <?php else: ?>
-                                    <div class="border rounded-4 p-5 text-center text-body-secondary">Нет модели для просмотра</div>
+                                    <div class="border rounded-4 p-5 text-center text-body-secondary"><?= h(t('no_model_preview')) ?></div>
                                 <?php endif; ?>
                             </div>
                         </div>
 
                         <div class="card glass-card border-0 shadow-sm">
                             <div class="card-body p-4">
-                                <h2 class="h4 mb-3">Мои файлы</h2>
+                                <h2 class="h4 mb-3"><?= h(t('my_files')) ?></h2>
                                 <?php if (!$currentUploads): ?>
-                                    <div class="text-center text-body-secondary py-4">Пока нет файлов</div>
+                                    <div class="text-center text-body-secondary py-4"><?= h(t('no_files')) ?></div>
                                 <?php else: ?>
                                     <div class="row g-3">
                                         <?php foreach ($currentUploads as $upload): ?>
@@ -633,9 +640,9 @@ if ($user) {
                                                         </div>
                                                         <div class="small text-body-secondary mb-2"><?= h(formatBytes(safeFileSize($upload['stored_path']))) ?> &middot; <?= h($upload['uploaded_at']) ?></div>
                                                         <div class="d-flex gap-2">
-                                                            <a class="btn btn-sm btn-outline-primary flex-grow-1" href="<?= h(actionUrl('home', ['tab' => 'models', 'preview' => $upload['share_token']])) ?>"><i class="bi bi-eye me-1"></i>Открыть</a>
+                                                            <a class="btn btn-sm btn-outline-primary flex-grow-1" href="<?= h(actionUrl('home', ['tab' => 'models', 'preview' => $upload['share_token']])) ?>"><i class="bi bi-eye me-1"></i><?= h(t('open')) ?></a>
                                                             <input type="text" class="d-none" id="admin-link-<?= (int) $upload['id'] ?>" readonly value="<?= h(fullFileUrl($upload)) ?>">
-                                                            <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-copy-target="#admin-link-<?= (int) $upload['id'] ?>"><i class="bi bi-clipboard me-1"></i>Копировать</button>
+                                                            <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-copy-target="#admin-link-<?= (int) $upload['id'] ?>"><i class="bi bi-clipboard me-1"></i><?= h(t('copy')) ?></button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -651,23 +658,23 @@ if ($user) {
                             <div class="col-12 <?= $selectedUpload ? 'col-lg-6' : '' ?>">
                                 <div class="card glass-card border-0 shadow-sm h-100">
                                     <div class="card-body p-4">
-                                        <h2 class="h4 mb-3">Загрузить 3D модель</h2>
+                                        <h2 class="h4 mb-3"><?= h(t('upload_3d')) ?></h2>
                                         <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
                                             <i class="bi bi-info-circle"></i>
                                             <span>
-                                                Загружено в этом месяце: <strong><?= $adminMonthly ?></strong> из <strong><?= $adminLimit ?></strong>.
-                                                Лимит обновится 1 числа следующего месяца.
+                                                <?= h(t('uploaded_month')) ?> <strong><?= $adminMonthly ?></strong> <?= h(t('of')) ?> <strong><?= $adminLimit ?></strong>.
+                                                <?= h(t('limit_resets')) ?>
                                             </span>
                                         </div>
                                         <form method="post" action="<?= h(actionUrl('upload')) ?>" enctype="multipart/form-data" class="vstack gap-3">
                                             <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                             <div>
-                                                <label for="model" class="form-label">GLB-файл (до 100 MB)</label>
+                                                <label for="model" class="form-label"><?= h(t('glb_label')) ?></label>
                                                 <input id="model" type="file" name="model" accept=".glb,model/gltf-binary" class="form-control form-control-lg" required>
                                             </div>
                                             <div>
                                                 <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="bi bi-cloud-upload me-2"></i>Загрузить
+                                                    <i class="bi bi-cloud-upload me-2"></i><?= h(t('upload_btn')) ?>
                                                 </button>
                                             </div>
                                         </form>
@@ -678,29 +685,29 @@ if ($user) {
                                 <div class="col-12 col-lg-6">
                                     <div class="card glass-card border-0 shadow-sm h-100">
                                         <div class="card-body p-4">
-                                            <h3 class="h5 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>Загруженный файл</h3>
+                                            <h3 class="h5 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i><?= h(t('uploaded_file')) ?></h3>
                                             <model-viewer src="<?= h(fileUrl($selectedUpload)) ?>" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="height: 220px; border-radius: .75rem;"></model-viewer>
                                             <div class="mt-3 vstack gap-2">
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="text-body-secondary small">Название</span>
+                                                    <span class="text-body-secondary small"><?= h(t('file_name')) ?></span>
                                                     <span class="fw-semibold small"><?= h($selectedUpload['original_name']) ?></span>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="text-body-secondary small">Размер</span>
+                                                    <span class="text-body-secondary small"><?= h(t('file_size')) ?></span>
                                                     <span class="fw-semibold small"><?= h(formatBytes(safeFileSize($selectedUpload['stored_path']))) ?></span>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="text-body-secondary small">Загружено</span>
+                                                    <span class="text-body-secondary small"><?= h(t('uploaded_at')) ?></span>
                                                     <span class="fw-semibold small"><?= h($selectedUpload['uploaded_at']) ?></span>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
-                                                    <span class="text-body-secondary small">Удалится</span>
+                                                    <span class="text-body-secondary small"><?= h(t('expires_at')) ?></span>
                                                     <span class="fw-semibold small"><?= h($selectedUpload['expires_at']) ?></span>
                                                 </div>
                                                 <hr class="my-1">
                                                 <input type="text" class="d-none" id="upload-preview-link" readonly value="<?= h(fullFileUrl($selectedUpload)) ?>">
                                                 <button type="button" class="btn btn-dark w-100" data-copy-target="#upload-preview-link">
-                                                    <i class="bi bi-clipboard me-2"></i>Скопировать ссылку
+                                                    <i class="bi bi-clipboard me-2"></i><?= h(t('copy_link')) ?>
                                                 </button>
                                             </div>
                                         </div>
@@ -712,11 +719,11 @@ if ($user) {
                     <?php elseif ($tab === 'users'): ?>
                         <div class="card glass-card border-0 shadow-sm mb-4">
                             <div class="card-body p-4">
-                                <h2 class="h4 mb-3">Создать пользователя</h2>
+                                <h2 class="h4 mb-3"><?= h(t('create_user')) ?></h2>
                                 <form method="post" action="<?= h(actionUrl('create-user')) ?>" class="row g-3 align-items-end">
                                     <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                     <div class="col-12 col-lg-4">
-                                        <label class="form-label">Код доступа</label>
+                                        <label class="form-label"><?= h(t('access_code')) ?></label>
                                         <input
                                             id="new_code"
                                             type="text"
@@ -730,7 +737,7 @@ if ($user) {
                                         >
                                     </div>
                                     <div class="col-12 col-lg-3">
-                                        <label class="form-label">Лимит в месяц</label>
+                                        <label class="form-label"><?= h(t('monthly_limit')) ?></label>
                                         <input
                                             id="upload_limit"
                                             type="number"
@@ -743,8 +750,8 @@ if ($user) {
                                     </div>
                                     <div class="col-12 col-lg-5">
                                         <div class="d-flex gap-2 flex-wrap">
-                                            <button type="submit" class="btn btn-primary">Создать</button>
-                                            <button type="submit" name="generate_code" value="1" class="btn btn-outline-primary">Сгенерировать код</button>
+                                            <button type="submit" class="btn btn-primary"><?= h(t('create_btn')) ?></button>
+                                            <button type="submit" name="generate_code" value="1" class="btn btn-outline-primary"><?= h(t('generate_code')) ?></button>
                                         </div>
                                     </div>
                                 </form>
@@ -753,16 +760,16 @@ if ($user) {
 
                         <div class="card glass-card border-0 shadow-sm">
                             <div class="card-body p-4">
-                                <h2 class="h4 mb-3">Все пользователи</h2>
+                                <h2 class="h4 mb-3"><?= h(t('all_users')) ?></h2>
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Код</th>
-                                                <th>Всего файлов</th>
-                                                <th>В этом месяце</th>
-                                                <th>Лимит/мес</th>
-                                                <th>Изменить</th>
+                                                <th><?= h(t('code_label')) ?></th>
+                                                <th><?= h(t('total_files')) ?></th>
+                                                <th><?= h(t('this_month')) ?></th>
+                                                <th><?= h(t('limit_month')) ?></th>
+                                                <th><?= h(t('change')) ?></th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -793,11 +800,11 @@ if ($user) {
                                                             <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                                             <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
                                                             <input type="number" name="upload_limit" class="form-control form-control-sm" min="1" value="<?= $limit ?>" required style="width: 80px;">
-                                                            <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary"><?= h(t('save')) ?></button>
                                                         </form>
                                                     </td>
                                                     <td>
-                                                        <form method="post" action="<?= h(actionUrl('delete-user')) ?>" onsubmit="return confirm('Удалить пользователя <?= h($row['code']) ?> и все его файлы?')">
+                                                        <form method="post" action="<?= h(actionUrl('delete-user')) ?>" onsubmit="return confirm('<?= h(t('confirm_delete', $row['code'])) ?>')">
                                                             <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                                             <input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
@@ -806,7 +813,7 @@ if ($user) {
                                                 </tr>
                                             <?php endforeach; ?>
                                             <?php if (!$hasUsers): ?>
-                                                <tr><td colspan="6" class="text-center text-body-secondary py-4">Пока нет пользователей</td></tr>
+                                                <tr><td colspan="6" class="text-center text-body-secondary py-4"><?= h(t('no_users')) ?></td></tr>
                                             <?php endif; ?>
                                         </tbody>
                                     </table>
@@ -823,20 +830,20 @@ if ($user) {
                 <div class="col-12 <?= $selectedUpload ? 'col-lg-6' : '' ?>">
                     <div class="card glass-card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
-                            <h2 class="h4 mb-3">Загрузчик</h2>
+                            <h2 class="h4 mb-3"><?= h(t('uploader')) ?></h2>
                             <div class="alert alert-info d-flex align-items-center gap-2 mb-3">
                                 <i class="bi bi-info-circle"></i>
-                                <span>Загружено в этом месяце: <strong><?= $userMonthly ?></strong> из <strong><?= $userLimit ?></strong></span>
+                                <span><?= h(t('uploaded_month')) ?> <strong><?= $userMonthly ?></strong> <?= h(t('of')) ?> <strong><?= $userLimit ?></strong></span>
                             </div>
                             <form method="post" action="<?= h(actionUrl('upload')) ?>" enctype="multipart/form-data" class="vstack gap-3">
                                 <input type="hidden" name="csrf_token" value="<?= h(csrfToken()) ?>">
                                 <div>
-                                    <label for="model" class="form-label">GLB-файл (до 100 MB)</label>
+                                    <label for="model" class="form-label"><?= h(t('glb_label')) ?></label>
                                     <input id="model" type="file" name="model" accept=".glb,model/gltf-binary" class="form-control form-control-lg" required>
                                 </div>
                                 <div>
                                     <button type="submit" class="btn btn-primary btn-lg w-100">
-                                        <i class="bi bi-cloud-upload me-2"></i>Загрузить
+                                        <i class="bi bi-cloud-upload me-2"></i><?= h(t('upload_btn')) ?>
                                     </button>
                                 </div>
                             </form>
@@ -847,29 +854,29 @@ if ($user) {
                     <div class="col-12 col-lg-6">
                         <div class="card glass-card border-0 shadow-sm h-100">
                             <div class="card-body p-4">
-                                <h3 class="h5 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>Загруженный файл</h3>
+                                <h3 class="h5 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i><?= h(t('uploaded_file')) ?></h3>
                                 <model-viewer src="<?= h(fileUrl($selectedUpload)) ?>" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="height: 220px; border-radius: .75rem;"></model-viewer>
                                 <div class="mt-3 vstack gap-2">
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-body-secondary small">Название</span>
+                                        <span class="text-body-secondary small"><?= h(t('file_name')) ?></span>
                                         <span class="fw-semibold small"><?= h($selectedUpload['original_name']) ?></span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-body-secondary small">Размер</span>
+                                        <span class="text-body-secondary small"><?= h(t('file_size')) ?></span>
                                         <span class="fw-semibold small"><?= h(formatBytes(safeFileSize($selectedUpload['stored_path']))) ?></span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-body-secondary small">Загружено</span>
+                                        <span class="text-body-secondary small"><?= h(t('uploaded_at')) ?></span>
                                         <span class="fw-semibold small"><?= h($selectedUpload['uploaded_at']) ?></span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-body-secondary small">Удалится</span>
+                                        <span class="text-body-secondary small"><?= h(t('expires_at')) ?></span>
                                         <span class="fw-semibold small"><?= h($selectedUpload['expires_at']) ?></span>
                                     </div>
                                     <hr class="my-1">
                                     <input type="text" class="d-none" id="user-preview-link" readonly value="<?= h(fullFileUrl($selectedUpload)) ?>">
                                     <button type="button" class="btn btn-dark w-100" data-copy-target="#user-preview-link">
-                                        <i class="bi bi-clipboard me-2"></i>Скопировать ссылку
+                                        <i class="bi bi-clipboard me-2"></i><?= h(t('copy_link')) ?>
                                     </button>
                                 </div>
                             </div>
@@ -880,9 +887,9 @@ if ($user) {
 
             <div class="card glass-card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <h2 class="h4 mb-3">Мои файлы</h2>
+                    <h2 class="h4 mb-3"><?= h(t('my_files')) ?></h2>
                     <?php if (!$uploads): ?>
-                        <div class="text-center text-body-secondary py-4">У вас пока нет файлов.</div>
+                        <div class="text-center text-body-secondary py-4"><?= h(t('no_user_files')) ?></div>
                     <?php else: ?>
                         <div class="row g-3">
                             <?php foreach ($uploads as $upload): ?>
@@ -899,9 +906,9 @@ if ($user) {
                                             </div>
                                             <div class="small text-body-secondary mb-2"><?= h(formatBytes(safeFileSize($upload['stored_path']))) ?> &middot; <?= h($upload['uploaded_at']) ?></div>
                                             <div class="d-flex gap-2">
-                                                <a class="btn btn-sm btn-outline-primary flex-grow-1" href="<?= h(actionUrl('home', ['preview' => $upload['share_token']])) ?>"><i class="bi bi-eye me-1"></i>Открыть</a>
+                                                <a class="btn btn-sm btn-outline-primary flex-grow-1" href="<?= h(actionUrl('home', ['preview' => $upload['share_token']])) ?>"><i class="bi bi-eye me-1"></i><?= h(t('open')) ?></a>
                                                 <input type="text" class="d-none" id="user-link-<?= (int) $upload['id'] ?>" readonly value="<?= h(fullFileUrl($upload)) ?>">
-                                                <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-copy-target="#user-link-<?= (int) $upload['id'] ?>"><i class="bi bi-clipboard me-1"></i>Копировать</button>
+                                                <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-copy-target="#user-link-<?= (int) $upload['id'] ?>"><i class="bi bi-clipboard me-1"></i><?= h(t('copy')) ?></button>
                                             </div>
                                         </div>
                                     </div>
@@ -950,13 +957,14 @@ if ($user) {
 
                 try {
                     await navigator.clipboard.writeText(url);
-                    button.textContent = 'Ссылка скопирована';
+                    const original = button.innerHTML;
+                    button.textContent = <?= json_encode(t('link_copied')) ?>;
 
                     setTimeout(() => {
-                        button.textContent = 'Копировать';
+                        button.innerHTML = original;
                     }, 1500);
                 } catch (error) {
-                    window.prompt('Скопируйте ссылку вручную:', url);
+                    window.prompt(<?= json_encode(t('copy_manual')) ?>, url);
                 }
             });
         });
