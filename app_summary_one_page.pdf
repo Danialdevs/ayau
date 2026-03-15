@@ -1,0 +1,57 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 1725 >>
+stream
+BT /F1 18 Tf 1 0 0 1 54 750 Tm (App Summary) Tj ET
+BT /F2 12 Tf 1 0 0 1 54 722 Tm (What it is) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 707 Tm (The current workspace at C:\\Users\\d\\Videos\\prokty contains no repository files.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 692 Tm (A functional description of the app was not found in repo.) Tj ET
+BT /F2 12 Tf 1 0 0 1 54 668 Tm (Who it is for) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 653 Tm (Primary user/persona: Not found in repo.) Tj ET
+BT /F2 12 Tf 1 0 0 1 54 629 Tm (What it does) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 614 Tm (- Feature set: Not found in repo.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 599 Tm (- User workflows: Not found in repo.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 584 Tm (- UI surfaces or screens: Not found in repo.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 569 Tm (- Integrations or external services: Not found in repo.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 554 Tm (- Data storage or persistence behavior: Not found in repo.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 539 Tm (- Background jobs, sync, or automation: Not found in repo.) Tj ET
+BT /F2 12 Tf 1 0 0 1 54 515 Tm (How it works) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 500 Tm (Evidence in workspace: root directory exists but is empty \(0 items\).) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 485 Tm (Source code, package manifests, README files, and git metadata were not found.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 470 Tm (Components/services/data flow: Not found in repo.) Tj ET
+BT /F2 12 Tf 1 0 0 1 54 446 Tm (How to run) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 431 Tm (1. Open the workspace at C:\\Users\\d\\Videos\\prokty.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 416 Tm (2. Add or restore the actual application repository contents.) Tj ET
+BT /F1 11 Tf 1 0 0 1 54 401 Tm (3. Build/run commands: Not found in repo.) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000000327 00000 n 
+0000000402 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2179
+%%EOF
